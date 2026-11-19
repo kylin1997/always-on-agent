@@ -1,0 +1,17 @@
+# 依赖（181MB，绝不入库）
+node_modules/
+
+# 运行时数据：SQLite 数据库、memory 文件、日志
+data/
+*.db
+*.sqlite
+*.log
+
+# 本地环境变量与密钥
+.env
+.env.*
+
+# 编辑器 / 系统杂项
+.DS_Store
+*.swp
+.idea/
