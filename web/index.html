@@ -1,0 +1,37 @@
+<!doctype html>
+<html lang="zh-CN">
+<head>
+  <meta charset="utf-8">
+  <meta name="viewport" content="width=device-width, initial-scale=1">
+  <title>Always On Agent</title>
+  <link rel="stylesheet" href="/styles.css">
+  <script type="module" src="/app.js"></script>
+</head>
+<body>
+  <header><h1>Always On Agent</h1></header>
+  <main>
+    <section aria-labelledby="compose-title">
+      <h2 id="compose-title">发消息</h2>
+      <form id="compose">
+        <label for="message">消息</label>
+        <textarea id="message" required maxlength="4000" rows="6"></textarea>
+        <label for="source-id">事件 ID（可选）</label>
+        <input id="source-id" maxlength="160">
+        <label class="checkbox"><input id="follow-up" type="checkbox" disabled> 续接上一会话</label>
+        <div class="actions">
+          <button type="submit">发送</button>
+          <button type="button" data-message="现在几点">时间</button>
+          <button type="button" data-message="30 秒后提醒我">定时</button>
+          <button type="button" data-message="发邮件给老板说我今天请假">模拟发邮件</button>
+        </div>
+        <p id="receipt" role="status"></p>
+      </form>
+    </section>
+    <section aria-labelledby="outbox-title">
+      <h2 id="outbox-title">消息与审批</h2>
+      <ol id="outbox" aria-live="polite"></ol>
+    </section>
+  </main>
+  <footer id="status" role="status">正在连接…</footer>
+</body>
+</html>

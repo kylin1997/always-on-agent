@@ -1,10 +1,11 @@
 {
   "name": "always-on-agent",
   "version": "0.1.0",
-  "description": "",
-  "main": "index.js",
+  "description": "Local event-driven always-on agent built on pi and SQLite",
+  "main": "src/index.js",
   "scripts": {
-    "test": "echo \"Error: no test specified\" && exit 1"
+    "start": "node src/index.js",
+    "dev": "node --watch src/index.js"
   },
   "keywords": [],
   "author": "",
@@ -14,6 +15,10 @@
     "@earendil-works/pi-agent-core": "^1.5.2",
     "@earendil-works/pi-ai": "^1.5.2",
     "@earendil-works/pi-coding-agent": "^1.5.2",
-    "better-sqlite3": "^11.10.0"
+    "better-sqlite3": "^11.10.0",
+    "@earendil-works/pi-schema": "1.5.2"
+  },
+  "engines": {
+    "node": ">=22.19.0"
   }
 }

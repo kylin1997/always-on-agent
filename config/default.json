@@ -1,0 +1,17 @@
+{
+  "port": 8787,
+  "dataDir": "data",
+  "pollMs": 500,
+  "leaseMs": 30000,
+  "maxAttempts": 3,
+  "batchSize": 8,
+  "maxTurns": 8,
+  "minIntervalMs": 250,
+  "provider": "ollama",
+  "ollamaUrl": "http://localhost:11434",
+  "model": "qwen3.5:4b",
+  "contextWindow": 32768,
+  "maxTokens": 4096,
+  "dreamEverySeconds": 0,
+  "riskRules": { "get_time": "allow", "set_timer": "allow", "send_external": "ask" }
+}

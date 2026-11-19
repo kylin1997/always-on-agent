@@ -2,31 +2,27 @@
 
 ## 项目概述
 
-- **always-on-agent** 是一个基于 Node.js 的常驻 agent 项目。
-- 核心依赖开源库 **pi**（npm 命名空间 `@earendil-works/pi-*`，常用包如 `@earendil-works/pi-agent-core`、`@earendil-works/pi-ai`、`@earendil-works/pi-coding-agent`）。
-- pi 依赖约定使用**最新稳定版**：`pi-agent-core` / `pi-ai` / `pi-coding-agent` 当前为 `1.5.2`（2026-11-19 经 npm registry 确认）。
-- 需求与架构详见 `docs/DESIGN.md`（v2 已定稿）：pi 只负责单次 run 内的 agent loop，外围自建 event inbox / timers / memory / permissions / outbox 五个持久原语。
-- 当前状态：设计已确认，依赖已安装，尚未开始编码。
+- **always-on-agent** 是一个基于 Node.js 的本机常驻 agent。
+- pi 1.5.2 负责单次 run 的 agent loop，SQLite 和本地文件承载 event inbox、timers、memory、permissions 与 outbox。架构详见 [设计文档 v4](docs/DESIGN.md)。
+- 运行时使用 Node.js ≥ 22.19 和 ESM。代码按模块划分，错误显式处理。
 
-## 常用命令
-
-> 注意：`package.json` 已创建，但 dev / test 脚本尚未定义（当前 `test` 为占位），编码阶段补齐。
+## 本地运行
 
 | 命令 | 说明 |
 | --- | --- |
-| `npm install` | 安装依赖（初始化后生效） |
-| `npm run dev` | 本地开发运行（脚本待定义） |
-| `npm test` | 运行测试（脚本待定义） |
+| `npm ci` | 安装锁定的依赖 |
+| `npm start` | 启动本机服务，默认地址为 `http://127.0.0.1:8787` |
+| `npm run dev` | 启动文件监听模式 |
+| `MODEL_PROVIDER=faux npm start` | 使用内置规则响应，可体验时间、提醒和模拟审批 |
 
-## 代码规范
+配置默认值见 [config/default.json](config/default.json)。用 `PORT`、`DATA_DIR`、`POLL_MS` 和 `LEASE_MS` 覆盖相应设置。Ollama 默认模型为 `qwen3.5:4b`，可用 `OLLAMA_MODEL` 和 `OLLAMA_URL` 覆盖。Ollama 无法连接时会切换到 faux。
 
-- 使用 **ESM** 模块系统（`"type": "module"`）。
-- 运行时：Node.js ≥ 22.19（本机实测 v22.22.2；pi 要求 ≥ 22.19）。
-- 保持小模块、单一职责；错误显式处理，不吞异常。
-- 详细规范待项目成型后补充。
+`MODEL_PROVIDER=openai-compatible` 需要 `ONLINE_BASE_URL`（HTTPS）、`ONLINE_MODEL` 和 `ONLINE_API_KEY`。密钥可从环境变量或数据目录下的 `credentials.json` 读取。在线模式会将本次请求上下文发送到配置的模型服务。
 
-## 测试方式
+本地脚本向 `POST /events` 或 `POST /timers` 提交 JSON 时，用启动终端显示的令牌设置 `X-Local-Token`。消息体使用 `{ "sourceId": "client-event-id", "text": "现在几点" }`。schedule 使用 UTC 毫秒时间戳 `dueAt`，可选正整数秒数 `everySeconds` 和提醒文本 `text`。
 
-- 测试框架尚未选定；推荐优先考虑 Node 内置 **`node:test`**（与 pi 仓库自身测试选择一致，避免过早引入额外依赖）。
-- 测试文件建议放在 `test/` 目录，命名 `*.test.mjs`。
-- 具体测试方案待需求明确后确定。
+`DREAM_EVERY_SECONDS` 启用定期记忆去重，默认关闭。运行数据默认写入 `data/`。
+
+## 验收
+
+模型接入、审批恢复和崩溃注入的验收场景见设计文档 §9。
