@@ -2,8 +2,12 @@
 
 一个**本机常驻 agent**：大部分时间休眠，被事件唤醒，干完活存状态，再睡回去。消息、提醒、审批都能唤醒它；它用本地模型思考、用工具做事、把结果写进收件箱给你看。全程离线、零 API key。
 
-> 基于 Anthropic 的文章 [Building always-on agents](https://claude.com/resources/articles/building-always-on-agents) 实现。文章讲的是**：别写一个永远跑着的 agent，而是给一次次短 run 套一层持久化外壳**。项目名里的 "always-on" 说的是体验，不是进程——agent 绝大多数时间不耗 token。
+> 基于 Anthropic 的文章 [Building always-on agents](https://claude.com/resources/articles/building-always-on-agents) 实现。
+>
+> 文章讲的&#x662F;**：别写一个永远跑着的 agent，而是给一次次短 run 套一层持久化外壳**。项目名里的 "always-on" 说的是体验，不是进程——agent 绝大多数时间不耗 token。  
 > 中文译文：[硅基老张《构建常驻 Agent》](https://kylin1997.github.io/2026/11/18/building-always-on-agents/)
+
+
 
 ---
 
@@ -30,7 +34,7 @@ ollama serve                              # 另开一个终端启动（若未自
 npm start                                 # 启动服务
 ```
 
-浏览器打开 **http://127.0.0.1:8787** ，在消息框里打字发送即可。终端会显示一个本地脚本令牌；用 curl 直接调 API 时要带上它。
+浏览器打开 **<http://127.0.0.1:8787>** ，在消息框里打字发送即可。终端会显示一个本地脚本令牌；用 curl 直接调 API 时要带上它。
 
 没有 Ollama 也想玩？用内置规则脑：`MODEL_PROVIDER=faux npm start`，能体验时间、提醒和审批全流程，回复是预设的、不是真模型。
 
@@ -42,13 +46,13 @@ npm start                                 # 启动服务
 
 pi（`@earendil-works/pi-*`）只负责**一次 run 内**的 agent loop：收消息 → 调模型 → 调工具 → 循环。真正要建的是外围五层持久化外壳：
 
-| 原语 | 作用 | 本项目实现 |
-|---|---|---|
+| 原语              | 作用                                          | 本项目实现                                     |
+| --------------- | ------------------------------------------- | ----------------------------------------- |
 | **Event inbox** | 所有触发源先进持久队列；handler 快应答，单 worker 批量消费，可崩溃重放 | `events` 表 + `POST /events` + `worker.js` |
-| **Timers** | follow-up（agent 自己设的提醒）与 schedule（用户设的周期任务） | `timers` 表 + `scheduler.js` |
-| **Memory** | 只存别处查不到的东西：指令、笔记、历史、进度 | `data/memory/` 文件 + `mem_index` 索引 |
-| **Permissions** | 凭证不进 transcript；高危操作挂起等审批 | `permissions.js` + `deferred_requests` 表 |
-| **Outbox** | run 的产出先落库，再由 dispatcher 投递 | `outbox` 表 + file/log/console dispatcher |
+| **Timers**      | follow-up（agent 自己设的提醒）与 schedule（用户设的周期任务） | `timers` 表 + `scheduler.js`               |
+| **Memory**      | 只存别处查不到的东西：指令、笔记、历史、进度                      | `data/memory/` 文件 + `mem_index` 索引        |
+| **Permissions** | 凭证不进 transcript；高危操作挂起等审批                   | `permissions.js` + `deferred_requests` 表  |
+| **Outbox**      | run 的产出先落库，再由 dispatcher 投递                 | `outbox` 表 + file/log/console dispatcher  |
 
 ```
  POST /events ──> [Inbox] ──> [Worker] ──> [Runtime + pi] ──> [Outbox] ──> [Dispatcher] ──> Web
