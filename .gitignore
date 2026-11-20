@@ -11,9 +11,6 @@ data/
 .env
 .env.*
 
-# WorkBuddy 本地工作数据（日志 / 项目记忆）
-.workbuddy/
-
 # 编辑器 / 系统杂项
 .DS_Store
 *.swp
