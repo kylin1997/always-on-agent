@@ -2,27 +2,25 @@
 
 ## 项目概述
 
-- **always-on-agent** 是一个基于 Node.js 的本机常驻 agent。
-- pi 1.5.2 负责单次 run 的 agent loop，SQLite 和本地文件承载 event inbox、timers、memory、permissions 与 outbox。架构详见 [设计文档 v4](docs/DESIGN.md)。
-- 运行时使用 Node.js ≥ 22.19 和 ESM。代码按模块划分，错误显式处理。
+- **always-on-agent** 是基于 Node.js 的本机常驻 agent：被事件唤醒、跑一次短 run、存状态、再休眠。
+- pi 1.5.2 负责单次 run 内的 agent loop；SQLite 和本地文件承载 event inbox、timers、memory、permissions、outbox 五个持久原语。
+- 运行时 Node.js ≥ 22.19、ESM。小模块、单一职责、错误显式处理。
 
-## 本地运行
+## 文档索引
 
-| 命令 | 说明 |
+| 需求 | 去看哪里 |
 | --- | --- |
-| `npm ci` | 安装锁定的依赖 |
-| `npm start` | 启动本机服务，默认地址为 `http://127.0.0.1:8787` |
-| `npm run dev` | 启动文件监听模式 |
-| `MODEL_PROVIDER=faux npm start` | 使用内置规则响应，可体验时间、提醒和模拟审批 |
+| 项目是什么、能做什么、30 秒上手 | [README.md](README.md) |
+| 本机环境初始化、模型准备、配置、HTTP API、常见问题 | [本地上手指南](docs/GETTING_STARTED.md) |
+| 架构与五个原语、技术决策、验收场景 | [设计文档 v4](docs/DESIGN.md) |
+| 如何端到端验证、feature map | [verify-always-on-agent](.workbuddy/skills/verify-always-on-agent/SKILL.md) |
 
-配置默认值见 [config/default.json](config/default.json)。用 `PORT`、`DATA_DIR`、`POLL_MS` 和 `LEASE_MS` 覆盖相应设置。Ollama 默认模型为 `qwen3.5:4b`，可用 `OLLAMA_MODEL` 和 `OLLAMA_URL` 覆盖。Ollama 无法连接时会切换到 faux。
+## 常用命令
 
-`MODEL_PROVIDER=openai-compatible` 需要 `ONLINE_BASE_URL`（HTTPS）、`ONLINE_MODEL` 和 `ONLINE_API_KEY`。密钥可从环境变量或数据目录下的 `credentials.json` 读取。在线模式会将本次请求上下文发送到配置的模型服务。
+`npm ci` 安装，`npm start` 启动（`http://127.0.0.1:8787`），`npm run dev` 监听模式。`MODEL_PROVIDER=faux npm start` 用内置规则脑，无需 Ollama。完整配置与环境变量见[上手指南](docs/GETTING_STARTED.md#5-配置)。
 
-本地脚本向 `POST /events` 或 `POST /timers` 提交 JSON 时，用启动终端显示的令牌设置 `X-Local-Token`。消息体使用 `{ "sourceId": "client-event-id", "text": "现在几点" }`。schedule 使用 UTC 毫秒时间戳 `dueAt`，可选正整数秒数 `everySeconds` 和提醒文本 `text`。
+## 关键约束
 
-`DREAM_EVERY_SECONDS` 启用定期记忆去重，默认关闭。运行数据默认写入 `data/`。
-
-## 验收
-
-模型接入、审批恢复和崩溃注入的验收场景见设计文档 §9。
+- 默认模型本地 Ollama `qwen3.5:4b`，零 key；探测不到服务时降级 faux，`/status` 显示实际 provider。
+- 运行时状态只写 `DATA_DIR`（默认 `data/`，已 gitignore）；凭证可放 `DATA_DIR/credentials.json`。
+- 验证必须走真实页面与 HTTP 接口并留证据，不能只跑单测就宣称可用。验收场景见设计文档 §9。
